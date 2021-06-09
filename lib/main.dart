@@ -39,14 +39,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // ? var is for navigation bottom bar
+  int _indexVal = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.white,
           title: Text("Hacker News"),
           centerTitle: true,
+          leading: LoadingInfo(
+            isLoading: widget.bloc.isLoading,
+          ),
         ),
         bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _indexVal,
           items: [
             BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.bell), label: "Top Stories"),
@@ -54,11 +62,12 @@ class _HomePageState extends State<HomePage> {
                 icon: Icon(CupertinoIcons.news), label: "New Stories")
           ],
           onTap: (index) {
+            if (index == 0) {
+              widget.bloc.storiesType.add(StoriesType.topStories);
+            } else
+              widget.bloc.storiesType.add(StoriesType.newStories);
             setState(() {
-              if (index == 0) {
-                widget.bloc.storiesType.add(StoriesType.topStories);
-              } else
-                widget.bloc.storiesType.add(StoriesType.newStories);
+              _indexVal = index;
             });
           },
         ),
@@ -99,6 +108,25 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
+    );
+  }
+}
+
+class LoadingInfo extends StatelessWidget {
+  final Stream<bool> isLoading;
+
+  const LoadingInfo({Key key, @required this.isLoading}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: isLoading,
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasData && snapshot.data) {
+          return CircularProgressIndicator();
+        }
+        return Container();
+      },
     );
   }
 }

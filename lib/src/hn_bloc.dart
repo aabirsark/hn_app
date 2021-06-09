@@ -11,30 +11,27 @@ enum StoriesType {
 }
 
 class HackerNewsBloc {
-  final _articlesSubject = BehaviorSubject<UnmodifiableListView<Article>>();
-
+  // ? Constructor---------------------------
   HackerNewsBloc() {
     _getArticleAndUpdatethem(_topIds);
 
     _storiesTypeController.stream.listen((storiesType) {
       /// something we gonna do with [storiesType]
       if (storiesType == StoriesType.newStories) {
-        print("new >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         _getArticleAndUpdatethem(_newsids);
       } else if (storiesType == StoriesType.topStories) {
-        print("top >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         _getArticleAndUpdatethem(_topIds);
       }
     });
   }
+  // ? ------------------------------------------
 
+  final _articlesSubject = BehaviorSubject<UnmodifiableListView<Article>>();
   _getArticleAndUpdatethem(List<int> ids) {
-    print(ids);
+    _isLoadingSubject.add(true);
     _updateArticles(ids).then((value) {
-      print("-------------------------------");
-      print(value);
-      print(_articles);
       _articlesSubject.add(UnmodifiableListView(_articles));
+      _isLoadingSubject.add(false);
     });
   }
 
@@ -48,6 +45,9 @@ class HackerNewsBloc {
     27388587,
     27412691,
   ];
+
+  Stream<bool> get isLoading => _isLoadingSubject.stream;
+  final _isLoadingSubject = BehaviorSubject<bool>.seeded(false);
 
   final _storiesTypeController = StreamController<StoriesType>();
 
