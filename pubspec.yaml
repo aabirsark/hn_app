@@ -1,0 +1,28 @@
+name: hn_app
+description: A new Flutter project.
+
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  built_collection: ^5.0.0
+  built_value: ^8.0.0
+  cupertino_icons: ^1.0.2
+  http: ^0.13.3
+  rxdart: ^0.27.1
+  url_launcher: ^6.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^1.0.0
+  built_value_generator: ^8.0.6
+
+flutter:
+  uses-material-design: true
