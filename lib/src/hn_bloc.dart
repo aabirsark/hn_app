@@ -1,6 +1,5 @@
 import 'dart:collection';
 import 'dart:async';
-import 'package:http/http.dart';
 import 'package:hn_app/src/articles.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:http/http.dart' as http;
@@ -11,8 +10,11 @@ enum StoriesType {
 }
 
 class HackerNewsBloc {
+  HashMap<int, Article> _cachedArticles;
+
   // ? Constructor---------------------------
   HackerNewsBloc() {
+    _cachedArticles = HashMap<int, Article>();
     _initializeArticles();
 
     _storiesTypeController.stream.listen((storiesType) async {
@@ -46,21 +48,25 @@ class HackerNewsBloc {
 
   Future<Null> _updateArticles(List<int> articleIds) async {
     var futureArticles = articleIds.map((e) => _getArticle(e));
-    print(futureArticles);
     var articles = await Future.wait(futureArticles);
-    print("copiled");
-    print(articles);
+
     _articles = articles;
   }
 
   Future<Article> _getArticle(int id) async {
-    final String storyUrl =
-        "https://hacker-news.firebaseio.com/v0/item/$id.json";
-    final storyRes = await http.get(Uri.parse(storyUrl));
-    if (storyRes.statusCode == 200) {
-      return parseArticle(storyRes.body);
+    if (!_cachedArticles.containsKey(id)) {
+      final String storyUrl =
+          "https://hacker-news.firebaseio.com/v0/item/$id.json";
+      final storyRes = await http.get(Uri.parse(storyUrl));
+      if (storyRes.statusCode == 200) {
+        _cachedArticles[id] = parseArticle(storyRes.body);
+      } else {
+        throw HackerNewsApiException("$storyUrl can't be fecthed..");
+      }
+    } else if (_cachedArticles.containsKey(id)) {
+      print("id do contain this");
     }
-    throw HackerNewsApiException("$storyUrl can't be fecthed..");
+    return _cachedArticles[id];
   }
 
   void close() {
@@ -68,15 +74,6 @@ class HackerNewsBloc {
   }
 
   // ? ??????? !!!!!!!!!!!!!!!!!!!!!! ---------------
-
-  static List<int> _newsids = [27404018, 27399581, 27415537, 27387110];
-
-  static List<int> _topIds = [
-    27390512,
-    27395635,
-    27388587,
-    27412691,
-  ];
 
   var _articles = <Article>[];
   final _articlesSubject = BehaviorSubject<UnmodifiableListView<Article>>();

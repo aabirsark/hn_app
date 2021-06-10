@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
-                Text(article.type),
+                Text('${article.descendents} comments'),
                 IconButton(
                     icon: Icon(CupertinoIcons.share),
                     onPressed: () async {
