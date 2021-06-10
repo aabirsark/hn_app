@@ -41,11 +41,11 @@ abstract class Article implements Built<Article, ArticleBuilder> {
 }
 
 // ? parseTopStories stuff
-List<int> parseTopStories(String jsonStr) {
-  return [];
-  // final parsed = jsonDecode(jsonStr);
-  // final listOfOds = List<int>.from(parsed);
-  // return listOfOds;
+/// [parseListStories] return stories in the form of List<int> from json
+List<int> parseListStories(String jsonStr) {
+  final parsed = jsonDecode(jsonStr);
+  final listOfOds = List<int>.from(parsed);
+  return listOfOds;
 }
 
 // ? parse Article stuff
