@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hn_app/src/articles.dart';
 import 'package:hn_app/src/hn_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
       home: HomePage(
         bloc: bloc,
       ),
+      theme: ThemeData(primarySwatch: Colors.deepOrange),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -46,7 +48,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
           title: Text("Hacker News"),
           centerTitle: true,
           leading: LoadingInfo(
@@ -112,20 +113,43 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class LoadingInfo extends StatelessWidget {
+class LoadingInfo extends StatefulWidget {
   final Stream<bool> isLoading;
 
   const LoadingInfo({Key key, @required this.isLoading}) : super(key: key);
 
   @override
+  _LoadingInfoState createState() => _LoadingInfoState();
+}
+
+class _LoadingInfoState extends State<LoadingInfo>
+    with SingleTickerProviderStateMixin {
+  // ? anim var
+  AnimationController _controller;
+  Animation animation;
+
+  //? init state to initialize animation and all
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        AnimationController(vsync: this, duration: Duration(seconds: 2));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: isLoading,
+      stream: widget.isLoading,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.hasData && snapshot.data) {
-          return CircularProgressIndicator();
-        }
-        return Container();
+        // if (snapshot.hasData && snapshot.data) {
+        _controller.forward().then((value) => _controller.reverse());
+        return FadeTransition(
+            opacity: Tween(begin: 0.5, end: 1.0).animate(
+                CurvedAnimation(parent: _controller, curve: Curves.easeIn)),
+            child: Icon(FontAwesomeIcons.hackerNewsSquare));
+        // }
+        // return Container();
       },
     );
   }
