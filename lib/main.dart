@@ -1,4 +1,6 @@
 import 'dart:collection';
+import 'dart:io';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +53,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // ? var is for navigation bottom bar
   int _indexVal = 0;
+  @override
+  void initState() {
+    super.initState();
+    // Enable hybrid composition.
+    if (Platform.isAndroid) WebView.platform = SurfaceAndroidWebView();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,17 +108,20 @@ class _HomePageState extends State<HomePage> {
           initialData: UnmodifiableListView<Article>([]),
           builder: (context, snapshot) {
             return ListView(
-              children: snapshot.data.map(myTile).toList(),
+              children: snapshot.data.map((e) => myTile(e, context)).toList(),
             );
           },
         ));
   }
 
-  Widget myTile(Article article) {
+  Widget myTile(Article article, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ExpansionTile(
-        title: Text(article.title),
+        title: Text(
+          article.title,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -121,11 +132,12 @@ class _HomePageState extends State<HomePage> {
                 IconButton(
                     icon: Icon(CupertinoIcons.share),
                     onPressed: () async {
-                      if (await canLaunch(article.url)) {
-                        launch(article.url);
-                      } else {
-                        print("Something went Wrong");
-                      }
+                      // if (await canLaunch(article.url)) {
+                      //   launch(article.url);
+                      // } else {
+                      //   print("Something went Wrong");
+                      // }
+                      Navigator.of(context).push(_createPage(article.url));
                     })
               ],
             ),
@@ -272,6 +284,41 @@ class MySearchApp extends SearchDelegate<UnmodifiableListView<Article>> {
           }).toList(),
         );
       },
+    );
+  }
+}
+
+Route _createPage(String url) {
+  return PageRouteBuilder(
+      pageBuilder: (context, animation, secondryAnimation) =>
+          WebViewPage(url: url),
+      transitionsBuilder: (context, animation, secondryAnimation, child) {
+        var begin = Offset(0.0, 1.0);
+        var end = Offset.zero;
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.ease));
+        var offsetAnimation = animation.drive(tween);
+        return SlideTransition(position: offsetAnimation, child: child);
+      });
+}
+
+class WebViewPage extends StatelessWidget {
+  const WebViewPage({Key key, this.url}) : super(key: key);
+
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "Hacker Reader",
+          style: TextStyle(color: Colors.black),
+        ),
+      ),
+      body: WebView(
+        initialUrl: url,
+      ),
     );
   }
 }
