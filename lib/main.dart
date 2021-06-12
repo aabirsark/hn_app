@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hn_app/src/articles.dart';
 import 'package:hn_app/src/hn_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   var hnBloc = HackerNewsBloc();
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
       ),
       theme: ThemeData(
           primarySwatch: Colors.blue,
+          fontFamily: GoogleFonts.playfairDisplay().fontFamily,
           appBarTheme: AppBarTheme(
             elevation: 0.0,
             backgroundColor: Colors.white,
@@ -62,6 +64,15 @@ class _HomePageState extends State<HomePage> {
           leading: LoadingInfo(
             isLoading: widget.bloc.isLoading,
           ),
+          actions: [
+            IconButton(
+                icon: Icon(Icons.search),
+                onPressed: () {
+                  showSearch(
+                      context: context,
+                      delegate: MySearchApp(widget.bloc.articles));
+                })
+          ],
         ),
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: Colors.black,
@@ -162,6 +173,104 @@ class _LoadingInfoState extends State<LoadingInfo>
             child: Icon(FontAwesomeIcons.hackerNewsSquare));
         // }
         // return Container();
+      },
+    );
+  }
+}
+
+class MySearchApp extends SearchDelegate<UnmodifiableListView<Article>> {
+  final Stream<UnmodifiableListView<Article>> article;
+
+  MySearchApp(this.article);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return <Widget>[
+      IconButton(
+          icon: Icon(
+            Icons.close,
+            color: Colors.black,
+          ),
+          onPressed: () {
+            query = "";
+          })
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+        icon: Icon(
+          Icons.arrow_back_ios,
+          color: Colors.black,
+        ),
+        onPressed: () {
+          close(context, null);
+        });
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return StreamBuilder(
+      stream: article,
+      builder: (BuildContext context,
+          AsyncSnapshot<UnmodifiableListView<Article>> snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: Text("No Data"),
+          );
+        }
+
+        var results = snapshot.data
+            .where((element) => element.title.toLowerCase().contains(query));
+
+        return ListView(
+          children: results.map<Widget>((e) {
+            return ListTile(
+              title: Text(
+                e.title,
+              ),
+              leading: Icon(CupertinoIcons.arrow_right),
+              onTap: () async {
+                if (await canLaunch(e.url)) {
+                  launch(e.url);
+                }
+              },
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return StreamBuilder(
+      stream: article,
+      builder: (BuildContext context,
+          AsyncSnapshot<UnmodifiableListView<Article>> snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: Text("No Data"),
+          );
+        }
+
+        var results = snapshot.data
+            .where((element) => element.title.toLowerCase().contains(query));
+
+        return ListView(
+          children: results.map<Widget>((e) {
+            return ListTile(
+              title: Text(
+                e.title,
+              ),
+              leading: Icon(CupertinoIcons.arrow_right),
+              onTap: () {
+                query = e.title;
+              },
+            );
+          }).toList(),
+        );
       },
     );
   }
