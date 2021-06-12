@@ -25,7 +25,13 @@ class MyApp extends StatelessWidget {
       home: HomePage(
         bloc: bloc,
       ),
-      theme: ThemeData(primarySwatch: Colors.deepOrange),
+      theme: ThemeData(
+          primarySwatch: Colors.blue,
+          appBarTheme: AppBarTheme(
+            elevation: 0.0,
+            backgroundColor: Colors.white,
+            iconTheme: IconThemeData(color: Colors.black),
+          )),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -48,13 +54,19 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Hacker News"),
+          title: Text(
+            "Hacker News",
+            style: TextStyle(color: Colors.black),
+          ),
           centerTitle: true,
           leading: LoadingInfo(
             isLoading: widget.bloc.isLoading,
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.black,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.grey,
           currentIndex: _indexVal,
           items: [
             BottomNavigationBarItem(
@@ -94,7 +106,7 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
-                Text('${article.descendents} comments'),
+                Text('${article.descendents.toString()} comments'),
                 IconButton(
                     icon: Icon(CupertinoIcons.share),
                     onPressed: () async {
